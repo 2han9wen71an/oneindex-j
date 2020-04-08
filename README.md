@@ -203,11 +203,11 @@ rewrite ^/(.*)$ /index.php?/$1 last;
 
 **注！"https://xxxxxx-my.sharepoint.com"中的"xxxxxx"需要改成你自己的**
 
-![宝塔](https://cdn.jsdelivr/net/gh/peng4740/oneindex-j/pic/baota.jpg)
+![宝塔](https://cdn.jsdelivr.net/gh/peng4740/oneindex-j/pic/baota.jpg)
 
 建议再参考下面"Nginx反代配置"修改配置文件加上两句"proxy_set_header Range $http_range;"
 
-![宝塔](https://cdn.jsdelivr/net/gh/peng4740/oneindex-j/pic/baota2.jpg)
+![宝塔](https://cdn.jsdelivr.net/gh/peng4740/oneindex-j/pic/baota2.jpg)
 
 ### Nginx反代配置
 
@@ -272,4 +272,4 @@ proxy_buffering off;
 
 ### 后台设置反代/CDN域名
 
-![后台设置反代/CDN域名](https://cdn.jsdelivr/net/gh/peng4740/oneindex-j/pic/admin-domain.jpg)
+![后台设置反代/CDN域名](https://cdn.jsdelivr.net/gh/peng4740/oneindex-j/pic/admin-domain.jpg)
