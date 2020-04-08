@@ -179,3 +179,97 @@ php one.php token:refresh
 ```
 php one.php upload:file 本地文件 [onedrive文件]
 ```
+
+## Nginx伪静态规则(Apache转Nginx转换工具转成的)
+```
+if (!-f $request_filename){
+set $rule_0 1$rule_0;
+}
+if (!-d $request_filename){
+set $rule_0 2$rule_0;
+}
+if ($rule_0 = "21"){
+rewrite ^/(.*)$ /index.php?/$1 last;
+}
+```
+
+## 反代/CDN加速说明
+
+### 宝塔反代
+
+首先从你Oneindex前台随意下载一个文件，得到如"https://xxxxxx-my.sharepoint.com/xxxxxxxx"的链接
+
+取前面域名"https://xxxxxx-my.sharepoint.com"
+
+**注！"https://xxxxxx-my.sharepoint.com"中的"xxxxxx"需要改成你自己的**
+
+![宝塔](https://cdn.jsdelivr/net/gh/peng4740/oneindex-j/pic/baota.jpg)
+
+建议再参考下面"Nginx反代配置"修改配置文件加上两句"proxy_set_header Range $http_range;"
+
+![宝塔](https://cdn.jsdelivr/net/gh/peng4740/oneindex-j/pic/baota2.jpg)
+
+### Nginx反代配置
+
+域名同宝塔
+
+```
+location  ~* \.(php|jsp|cgi|asp|aspx)$
+{
+    proxy_pass https://xxxxxx-my.sharepoint.com; #"xxxxxx"需要改成你自己的
+    proxy_set_header Host xxxxxx-my.sharepoint.com; #"xxxxxx"需要改成你自己的
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header REMOTE-HOST $remote_addr;
+    proxy_set_header Range $http_range;
+}
+location /
+{
+    proxy_pass https://xxxxxx-my.sharepoint.com; #"xxxxxx"需要改成你自己的
+    proxy_set_header Host xxxxxx-my.sharepoint.com; #"xxxxxx"需要改成你自己的
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header REMOTE-HOST $remote_addr;
+    
+    add_header X-Cache $upstream_cache_status;
+    proxy_set_header Range $http_range;
+    #Set Nginx Cache
+    
+    	add_header Cache-Control no-cache;
+    expires 12h;
+}
+```
+
+
+#### Nginx(宝塔)反代缓存设置
+
+你这个有一个问题就是下载大文件暂停重连就会找不到range，还要再加上
+```
+proxy_set_header Range $http_range;
+```
+另外尽量不要使用IDM这种工具，断线再连就会401，所以下到99%断线基本上就废了，目前不知道什么原因，各位大佬有兴趣可以研究一下。
+
+另外还有一个问题，还是大文件下载他会预先下载部分内容，对于小硬盘来说会直接撑爆硬盘，还有预载的超快下载速度会使CPU很容易占用超过50%（针对某mach机器和其他限制严重机器）还要再限制一下缓存占用
+↓↓↓↓↓以下是小缓存设置↓↓↓↓
+```
+proxy_buffering on;
+proxy_buffer_size 4k;
+proxy_buffers 8 2M;
+proxy_busy_buffers_size 10M;
+proxy_max_temp_file_size 0;
+```
+↓↓↓↓↓↓↓↓以下是0缓存设置↓↓↓
+```
+proxy_buffering off;
+```
+参考地址: ["超音速"详见链接评论区](https://niconiconi.cc/blog/202.html)
+
+### 使用CDN
+
+首先需要在支持Cname回源的CDN接入你的域名
+
+回源地址填写"https://xxxxxx-my.sharepoint.com"
+
+### 后台设置反代/CDN域名
+
+![后台设置反代/CDN域名](https://cdn.jsdelivr/net/gh/peng4740/oneindex-j/pic/admin-domain.jpg)
